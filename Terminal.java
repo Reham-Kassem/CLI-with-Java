@@ -51,9 +51,77 @@ class Parser{
 
 
 public class Terminal {
-    
-    
-    
+     public void echo(String args[]) {
+        for (String input : args) {
+            System.out.print(input);
+        }
+    }
+
+    private static File makeFile(String destinationPath) {
+        File file = new File(destinationPath);
+        if (!file.isAbsolute()) {
+            String curPath = getCurrentPath().toString();
+            file = new File(curPath, destinationPath);
+        }
+        return file;
+    }
+
+    public static boolean mkdir(String destinationPath) throws Exception {
+        File file = makeFile(destinationPath);
+
+        if (destinationPath.length() == 0 || !file.getParentFile().exists())
+            throw new Exception(String.format("cannot create directory ‘%s’: No such file or directory", destinationPath));
+        if (file.exists())
+            throw new Exception(String.format("cannot create directory ‘%s’: File exists", destinationPath));
+
+        try {
+            if (!file.mkdir()) return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean rmdir(String destinationPath) throws Exception {
+        File file = makeFile(destinationPath);
+        if (destinationPath.length() == 0 || !file.exists())
+            throw new Exception(String.format("failed to remove '%s': No such file or directory", destinationPath));
+        if (!file.isDirectory())
+            throw new Exception(String.format("failed to remove '%s': Not a directory", destinationPath));
+
+        try {
+            if (!file.delete())
+                return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
+    // REQUIRES: Path must be valid
+    // EFFECTS: creates a new file at the given path.
+    public static boolean touch(String destinationPath) throws Exception {
+        File file = makeFile(destinationPath);
+        if (destinationPath.length() == 0 || !file.getParentFile().exists())
+            throw new Exception(String.format("cannot touch '%s': No such file or directory", destinationPath));
+
+        try {
+            if (!file.createNewFile()) return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    // REQUIRES: Path must be valid
+    // EFFECTS: returns a list of files and folders inside the current path.
+    public static File[] ls() {
+        File file = new File(getCurrentPath().toString());
+        return file.listFiles();
+    }  
         
     /**
      * @param args the command line arguments
